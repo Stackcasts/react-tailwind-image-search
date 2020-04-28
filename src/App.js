@@ -1,18 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
+import SearchBar from './assets/components/SearchBar';
+import ImageList from './assets/components/ImageList';
+
+const key = process.env.REACT_APP_UNSPLASH_API_KEY;
 
 function App() {
+  const [term, setTerm] = useState('');
+  const [results, setResults] = useState([]);
+  const [searched, setSearched] = useState(false);
+
+  function handleSearch(e) {
+    e.preventDefault();
+    
+    axios.get(`https://api.unsplash.com/search/photos/?client_id=${key}&query=${term}`)
+      .then(response => {
+        const images = response.data.results;
+
+        setResults(images);
+      })
+      .catch(error => {
+        console.error('error: ', error);
+        setResults([]);
+      })
+      .finally(() => {
+        setSearched(true);
+      });
+  }
+
   return (
-    <div className="max-w-sm rounded overflow-hidden shadow-lg">
-      <div className="px-6 py-4">
-        <div className="font-bold text-purple-500 text-xl mb-2">
-          Alt Text
-        </div>
-        <p className="text-gray-700 text-base">
-          Image Details
-        </p>
-      </div>
+    <div className="container mx-auto mt-5">
+      <SearchBar
+        term={term}
+        handleChange={(value) => setTerm(value)}
+        handleSearch={e => handleSearch(e)}
+      />
+      <ImageList
+        results={results}
+        searched={searched}
+      />
     </div>
-  );
+  )
 }
 
 export default App;
